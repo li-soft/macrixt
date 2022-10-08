@@ -55,7 +55,7 @@ namespace MacrixT
         {
             return typeof(App).Assembly
                 .GetTypes()
-                .Where(t => !t.IsInterface && !t.IsAbstract)
+                .Where(t => !t.IsInterface && !t.IsAbstract && !t.IsGenericType)
                 .SelectMany(t =>
                 {
                     var interfaces = t.GetInterfaces();

@@ -6,36 +6,93 @@
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="MacrixT" Height="450" Width="980">
+        Title="MacrixT" 
+        WindowState="Maximized" 
+        WindowStyle="None">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
     <Grid>
-        <StackPanel >
-            <DataGrid ItemsSource="{Binding People}" AutoGenerateColumns="False">
+        <Label 
+            Content="Loading..." 
+            Visibility="{Binding PeopleTask.IsNotCompleted, Converter={StaticResource BooleanToVisibilityConverter}}"
+            />
+        <Label 
+            Content="{Binding PeopleTask.ErrorMessage}" 
+            Background="Red" 
+            Visibility="{Binding PeopleTask.IsFaulted, Converter={StaticResource BooleanToVisibilityConverter}}"
+            />
+        
+        <StackPanel Visibility="{Binding PeopleTask.IsSuccessfullyCompleted, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <DataGrid ItemsSource="{Binding PeopleResult}" AutoGenerateColumns="False" CanUserAddRows="False">
+                <DataGrid.Resources>
+                    <Style TargetType="TextBox">    
+                        <Setter Property="Validation.ErrorTemplate">    
+                            <Setter.Value>    
+                                <ControlTemplate>    
+                                    <StackPanel>    
+                                        <Border BorderThickness="2" BorderBrush="DarkRed">    
+                                            <StackPanel>    
+                                                <AdornedElementPlaceholder    
+                                                    x:Name="errorControl" />    
+                                            </StackPanel>    
+                                        </Border>    
+                                        <TextBlock Text="{Binding AdornedElement.ToolTip    
+                        , ElementName=errorControl}" Foreground="Red" />    
+                                    </StackPanel>    
+                                </ControlTemplate>    
+                            </Setter.Value>    
+                        </Setter>    
+                        <Style.Triggers>    
+                            <Trigger Property="Validation.HasError" Value="true">    
+                                <Setter Property="BorderBrush" Value="Red" />    
+                                <Setter Property="BorderThickness" Value="1" />    
+                                <Setter Property="ToolTip"    
+                                        Value="{Binding RelativeSource={RelativeSource Self}    
+                    , Path=(Validation.Errors)[0].ErrorContent}" />    
+                            </Trigger>    
+                        </Style.Triggers>    
+                    </Style>   
+                </DataGrid.Resources>
                 <DataGrid.Columns>
 
-                    <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" />
-                    <DataGridTextColumn Header="Last Name" Binding="{Binding LastName}" />
-                    <DataGridTextColumn Header="Street Name" Binding="{Binding StreetName}" />
-                    <DataGridTextColumn Header="House Number" Binding="{Binding HouseNumber}" />
-                    <DataGridTextColumn Header="Apartment Number" Binding="{Binding ApartmentNumber}" />
-                    <DataGridTextColumn Header="Postal Code" Binding="{Binding PostalCode}" />
-                    <DataGridTextColumn Header="Phone Number" Binding="{Binding PhoneNumber}" />
+                    <DataGridTextColumn 
+                        Header="First Name" 
+                        Binding="{Binding FirstName, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" 
+                        />
+                    <DataGridTextColumn Header="Last Name" Binding="{Binding LastName, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" />
+                    <DataGridTextColumn Header="Street Name" Binding="{Binding StreetName, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" />
+                    <DataGridTextColumn Header="House Number" Binding="{Binding HouseNumber, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" />
+                    <DataGridTextColumn Header="Apartment Number" Binding="{Binding ApartmentNumber, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" />
+                    <DataGridTextColumn Header="Postal Code" Binding="{Binding PostalCode, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" />
+                    <DataGridTextColumn Header="Phone Number" Binding="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" />
 
                     <DataGridTemplateColumn Header="Date Of Birth">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <DatePicker SelectedDate="{Binding DateOfBirth}" BorderThickness="0" />
+                                <DatePicker SelectedDate="{Binding DateOfBirth, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" BorderThickness="0" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                 
-                    <DataGridTextColumn Header="Age" Binding="{Binding Age}" IsReadOnly="True" />
-                    <DataGridTextColumn Header="Action" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Age" Binding="{Binding Age, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True, ValidatesOnDataErrors=True}" IsReadOnly="True" />
+                    <DataGridTemplateColumn Header="Action">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button CommandParameter="{Binding}" Command="{Binding Path=DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}">Delete</Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
                 </DataGrid.Columns>
+                
             </DataGrid>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Margin="10">Save</Button>
-                <Button Margin="10">Cancel</Button>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Margin="10" Command="{Binding AddItemCommand}">Add item</Button>
+                <Button Margin="10" Command="{Binding SaveCommand}">Save all</Button>
+                <Button Margin="10" Command="{Binding CancelCommand}">Cancel all</Button>
             </StackPanel>
         </StackPanel>
     </Grid>
