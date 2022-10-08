@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using MacrixT.Views;
 using MahApps.Metro.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +26,7 @@ namespace MacrixT
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            Services.GetRequiredService<MainWindow>().Show();
+            Services.GetRequiredService<PeopleView>().Show();
             base.OnStartup(e);
         }
 
