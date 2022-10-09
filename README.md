@@ -1,6 +1,8 @@
 ﻿# Macrix tech task
 
-## xml data file location, please see 'PeopleService' constructor
+## MacrixT = Macrix Table
+
+### xml data file location, please see 'PeopleService' constructor
 ```csharp
         // should come from cofig ideally
         _dirPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\macrixt";
