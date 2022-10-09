@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,14 +36,8 @@ public class PeopleViewModel : ObservableRecipient
         set
         {
             _isInEdit = value;
-            if (!value)
-            {
-                return;
-            }
-            
             SaveCommand.NotifyCanExecuteChanged();
             CancelCommand.NotifyCanExecuteChanged();
-            RemoveCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -57,7 +50,7 @@ public class PeopleViewModel : ObservableRecipient
 
         SaveCommand = new AsyncRelayCommand(Save, CanSave);
         CancelCommand = new RelayCommand(Cancel, () => IsInEdit);
-        RemoveCommand = new RelayCommand<object>(DeleteRow, CanDeleteRow);
+        RemoveCommand = new RelayCommand<object>(DeleteRow);
         AddItemCommand = new RelayCommand(AddItem);
     }
 
@@ -72,8 +65,6 @@ public class PeopleViewModel : ObservableRecipient
         PeopleResult.Add(person);
     }
 
-    private static bool CanDeleteRow(object? obj) => obj is Person person && person.IsValid();
-
     private bool CanSave() => IsInEdit && PeopleResult.All(p => p.IsValid());
 
     private void AssignData(object? _, PropertyChangedEventArgs args)
@@ -87,33 +78,17 @@ public class PeopleViewModel : ObservableRecipient
         PeopleResult.Clear();
         foreach (var person in PeopleTask.Result!)
         {
+            person.PropertyChanged += (_, __) => IsInEdit = true;
             PeopleResult.Add(person);
         }
 
-        PeopleResult.CollectionChanged += (_, colArgs) =>
+        if (PeopleResult.Any())
         {
-            if (colArgs.Action == NotifyCollectionChangedAction.Add)
-            {
-                var newItems = colArgs.NewItems?.Cast<Person>() ?? Enumerable.Empty<Person>();
-                var oldItems = colArgs.OldItems?.Cast<Person>() ?? Enumerable.Empty<Person>();
-                var addedItem = newItems.Except(oldItems);
-                foreach (var person in addedItem)
-                {
-                    person.PropertyChanged += (_, __) =>
-                    {
-                        IsInEdit = true;
-                    };
-                }
-            }
-            IsInEdit = true;
-        };
-        
-        foreach (var person in PeopleResult)
-        {
-            person.PropertyChanged += (_, __) => IsInEdit = true;
+            IsInEdit = false;
         }
+        
+        PeopleResult.CollectionChanged += (_, __) => IsInEdit = true;
     }
-
 
     private async Task<ObservableCollection<Person>> Load()
     {
@@ -121,12 +96,16 @@ public class PeopleViewModel : ObservableRecipient
         return new ObservableCollection<Person>(storedPeople);
     }
 
-    private void Cancel() => PeopleTask = new NotifyTaskCompletion<ObservableCollection<Person>?>(Load(), AssignData);
+    private void Cancel()
+    {
+        PeopleTask = new NotifyTaskCompletion<ObservableCollection<Person>?>(Load(), AssignData);
+        IsInEdit = false;
+    }
 
     private async Task Save()
     {
         await _peopleService.DumpPeople(PeopleResult);
-        PeopleTask = new NotifyTaskCompletion<ObservableCollection<Person>?>(Load(), AssignData);
+        IsInEdit = false;
     }
 
     private void DeleteRow(object? obj)
