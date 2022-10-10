@@ -11,7 +11,7 @@ namespace MacrixT.Services;
 
 public interface IPeopleService
 {
-    Task<IEnumerable<Person>> GetStoredPeople();
+    Task<Person[]> GetStoredPeople();
     Task DumpPeople(IEnumerable<Person> people);
 }
 
@@ -27,13 +27,13 @@ public class PeopleService : IPeopleService
         _solutionDataPath = Path.Combine(_dirPath, "dalalatata.max");
     }
     
-    public async Task<IEnumerable<Person>> GetStoredPeople()
+    public async Task<Person[]> GetStoredPeople()
     {
         EnsurePath();
         
         if (!HasDataFile())
         {
-            return Enumerable.Empty<Person>();
+            return Array.Empty<Person>();
         }
 
         await using var file = File.OpenRead(_solutionDataPath);
@@ -42,7 +42,7 @@ public class PeopleService : IPeopleService
         await Task.Delay(500);
         file.Close();
 
-        return data?.People?.Length == 0 ? Enumerable.Empty<Person>() : data!.People!.AsEnumerable();
+        return data?.People?.Length == 0 ? Array.Empty<Person>() : data!.People!;
     }
 
     public async Task DumpPeople(IEnumerable<Person> people)

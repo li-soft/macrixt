@@ -20,8 +20,8 @@ public class PeopleViewModel : ObservableRecipient
     public RelayCommand<object> RemoveCommand { get; }
     public RelayCommand AddItemCommand { get; }
 
-    private NotifyTaskCompletion<ObservableCollection<Person>?> _peopleTask;
-    public NotifyTaskCompletion<ObservableCollection<Person>?> PeopleTask
+    private NotifyTaskCompletion<Person[]> _peopleTask;
+    public NotifyTaskCompletion<Person[]> PeopleTask
     {
         get => _peopleTask;
         set => SetProperty(ref _peopleTask, value);
@@ -45,7 +45,7 @@ public class PeopleViewModel : ObservableRecipient
     {
         _peopleService = peopleService;
 
-        PeopleTask = new NotifyTaskCompletion<ObservableCollection<Person>?>(Load(), AssignData);
+        PeopleTask = new NotifyTaskCompletion<Person[]?>(Load(), AssignData);
         PeopleResult = new ObservableCollection<Person>();
 
         SaveCommand = new AsyncRelayCommand(Save, CanSave);
@@ -90,15 +90,15 @@ public class PeopleViewModel : ObservableRecipient
         PeopleResult.CollectionChanged += (_, __) => IsInEdit = true;
     }
 
-    private async Task<ObservableCollection<Person>> Load()
+    private async Task<Person[]> Load()
     {
         var storedPeople = await _peopleService.GetStoredPeople();
-        return new ObservableCollection<Person>(storedPeople);
+        return storedPeople;
     }
 
     private void Cancel()
     {
-        PeopleTask = new NotifyTaskCompletion<ObservableCollection<Person>?>(Load(), AssignData);
+        PeopleTask = new NotifyTaskCompletion<Person[]>(Load(), AssignData);
         IsInEdit = false;
     }
 
